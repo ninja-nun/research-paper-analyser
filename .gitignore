@@ -1,0 +1,34 @@
+# Python environments
+.venv/
+venv/
+env/
+**/.venv/
+**/venv/
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Build outputs
+build/
+dist/
+*.egg-info/
+
+# Datasets and model artifacts
+*.arrow
+*.parquet
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+backend/arxiv/
+
+# OS/editor artifacts
+.DS_Store
+__MACOSX/
+.vscode/

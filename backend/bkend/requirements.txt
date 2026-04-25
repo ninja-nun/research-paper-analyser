@@ -1,0 +1,20 @@
+fastapi
+uvicorn
+python-multipart
+chromadb # using this instead of faiss for vector database management cause faiss will cause issues with windows users and chromadb is more user friendly and easier to set up
+requests
+numpy==1.26.4
+torch==2.4.0
+faiss-cpu # remove this line if you get issues during installation
+sentence-transformers==2.7.0
+pymupdf
+pdfplumber
+scikit-learn
+transformers
+keybert
+datasets
+evaluate
+rouge-score
+sentencepiece
+accelerate
+kaggle
