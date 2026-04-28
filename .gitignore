@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+*.pkl
+*.pt
+*.bin
+*.model
+*.dylib
+*.so
+.env
+.DS_Store
