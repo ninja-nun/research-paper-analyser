@@ -4,6 +4,7 @@ venv/
 env/
 **/.venv/
 **/venv/
+.env
 
 # Python caches and test artifacts
 __pycache__/
@@ -26,6 +27,10 @@ dist/
 *.pth
 *.ckpt
 *.safetensors
+*.pkl
+*.model
+*.dylib
+*.so
 backend/arxiv/
 
 # OS/editor artifacts

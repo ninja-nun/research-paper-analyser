@@ -3,6 +3,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from services.chat_engine import answer_question
@@ -12,6 +13,14 @@ from services.vector_db import clear_db, store_embeddings
 
 
 app = FastAPI(title="Research Paper Analyzer - Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 DATA_DIR = Path("data")
 RAW_PAPERS_DIR = DATA_DIR / "raw_papers"
