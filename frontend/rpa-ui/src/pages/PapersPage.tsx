@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Search, Filter } from 'lucide-react';
-import { usePapers } from '../hooks/useApi';
 import { PaperCard } from '../components/paper/PaperCard';
-import { Skeleton } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
+import { DEMO_PAPERS } from '../lib/demoPapers';
+import { usePapers } from '../hooks/useApi';
 export function PapersPage() {
-  const { data: papers, isLoading } = usePapers();
+  const { data: recentUploads, isLoading } = usePapers();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const filteredPapers = papers?.filter((paper) => {
+  const filteredPapers = DEMO_PAPERS.filter((paper) => {
     const matchesSearch =
     paper.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     paper.authors.some((a) =>
@@ -60,13 +60,35 @@ export function PapersPage() {
         )}
       </div>
 
-      {/* Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-slate-900">Recent Uploads</h2>
+          <span className="text-sm text-slate-500">Up to 2 most recent uploads are stored</span>
+        </div>
+
         {isLoading ?
-        Array(8).
-        fill(0).
-        map((_, i) => <Skeleton key={i} className="h-48 rounded-2xl" />) :
-        filteredPapers?.length === 0 ?
+        <div className="text-slate-500">Loading recent uploads...</div> :
+        recentUploads.length === 0 ?
+        <div className="bg-white rounded-3xl border border-dashed border-gray-300 p-8 text-slate-500">
+            No uploaded papers yet.
+          </div> :
+        <div className="grid sm:grid-cols-2 xl:grid-cols-2 gap-6">
+            {recentUploads.map((paper) =>
+          <PaperCard
+            key={paper.id}
+            paper={paper} />
+
+          )}
+          </div>
+        }
+      </div>
+
+      {/* Demo Papers */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-slate-900">Demo Papers</h2>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredPapers.length === 0 ?
         <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
             <p className="text-slate-500 mb-4">
               No papers found matching your criteria.
@@ -82,11 +104,11 @@ export function PapersPage() {
             </Button>
           </div> :
 
-        filteredPapers?.map((paper) =>
+        filteredPapers.map((paper) =>
         <PaperCard
           key={paper.id}
           paper={paper}
-          onDelete={(id) => console.log('Delete', id)} />
+          clickable={false} />
 
         )
         }

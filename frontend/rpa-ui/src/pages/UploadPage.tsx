@@ -4,7 +4,7 @@ import { DropZone } from '../components/upload/DropZone';
 import { useUpload } from '../hooks/useApi';
 export function UploadPage() {
   const navigate = useNavigate();
-  const { mutateAsync, isUploading, progress } = useUpload();
+  const { mutateAsync, isUploading, progress, error } = useUpload();
   const handleUpload = async (file: File) => {
     try {
       const { paper_id } = await mutateAsync(file);
@@ -32,7 +32,8 @@ export function UploadPage() {
         <DropZone
           onUpload={handleUpload}
           isUploading={isUploading}
-          progress={progress} />
+          progress={progress}
+          uploadError={error} />
         
       </div>
 

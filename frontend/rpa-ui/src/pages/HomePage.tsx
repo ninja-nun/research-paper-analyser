@@ -8,11 +8,11 @@ import {
   Zap } from
 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { usePapers } from '../hooks/useApi';
 import { PaperCard } from '../components/paper/PaperCard';
-import { Skeleton } from '../components/ui/Skeleton';
+import { DEMO_PAPERS } from '../lib/demoPapers';
+import { usePapers } from '../hooks/useApi';
 export function HomePage() {
-  const { data: papers, isLoading } = usePapers();
+  const { data: recentUploads, isLoading } = usePapers();
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
@@ -107,10 +107,33 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Recent Papers */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-3xl font-bold text-slate-900">Recent Uploads</h2>
+          <span className="text-sm text-slate-500">Last 2 uploads</span>
+        </div>
+
+        {isLoading ?
+        <div className="text-slate-500">Loading recent uploads...</div> :
+        recentUploads.length === 0 ?
+        <div className="bg-white rounded-3xl border border-dashed border-gray-300 p-8 text-slate-500">
+            No uploaded papers yet.
+          </div> :
+        <div className="grid sm:grid-cols-2 gap-6">
+            {recentUploads.map((paper) =>
+          <PaperCard
+            key={paper.id}
+            paper={paper} />
+
+          )}
+          </div>
+        }
+      </section>
+
+      {/* Demo Papers */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-3xl font-bold text-slate-900">Recent Papers</h2>
+          <h2 className="text-3xl font-bold text-slate-900">Demo Papers</h2>
           <Link
             to="/papers"
             className="text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
@@ -120,15 +143,9 @@ export function HomePage() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoading ?
-          Array(3).
-          fill(0).
-          map((_, i) =>
-          <Skeleton key={i} className="h-48 rounded-2xl" />
-          ) :
-          papers?.
-          slice(0, 3).
-          map((paper) => <PaperCard key={paper.id} paper={paper} />)}
+          {DEMO_PAPERS.slice(0, 3).map((paper) =>
+          <PaperCard key={paper.id} paper={paper} clickable={false} />
+          )}
         </div>
       </section>
     </div>);

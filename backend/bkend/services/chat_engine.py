@@ -7,6 +7,16 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "mistral"
 
 
+def _fallback_answer(question: str, context_chunks: list[str]) -> str:
+    """Provide a simple extractive answer when no chat model is available."""
+    if not context_chunks:
+        return "I don't have enough information to answer that."
+
+    intro = "I couldn't reach the chat model, so here's the most relevant text from the paper:"
+    excerpt = "\n\n".join(context_chunks[:2])
+    return f"{intro}\n\n{excerpt}"
+
+
 def _call_ollama(prompt: str) -> str:
     """Call a locally running Ollama model."""
     payload = {
@@ -64,12 +74,15 @@ def answer_question(
     context_chunks = retrieve(question, top_k=top_k)
     prompt = build_prompt(question, context_chunks)
 
-    if use_openai:
-        if not openai_api_key:
-            raise ValueError("openai_api_key is required when use_openai=True")
-        answer = _call_openai(prompt, openai_api_key)
-    else:
-        answer = _call_ollama(prompt)
+    try:
+        if use_openai:
+            if not openai_api_key:
+                raise ValueError("openai_api_key is required when use_openai=True")
+            answer = _call_openai(prompt, openai_api_key)
+        else:
+            answer = _call_ollama(prompt)
+    except (requests.RequestException, KeyError, ValueError):
+        answer = _fallback_answer(question, context_chunks)
 
     return {
         "answer": answer,

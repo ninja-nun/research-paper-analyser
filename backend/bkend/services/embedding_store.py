@@ -53,6 +53,46 @@ def chunk_text(text: str, chunk_size: int = 300, overlap: int = 50) -> list[str]
     return chunks
 
 
+def chunk_by_sections(
+    sections: dict[str, str],
+    *,
+    max_words: int = 220,
+    overlap: int = 40,
+) -> list[str]:
+    """
+    Build retrieval chunks from semantic sections first, then split oversized
+    sections with the existing overlapping word chunker.
+    """
+    chunks: list[str] = []
+    ordered_section_names = [
+        "abstract",
+        "introduction",
+        "background",
+        "related_work",
+        "methodology",
+        "experiments",
+        "results",
+        "discussion",
+        "conclusion",
+        "unknown",
+    ]
+
+    for section_name in ordered_section_names:
+        section_text = sections.get(section_name, "").strip()
+        if not section_text:
+            continue
+
+        section_words = section_text.split()
+        if len(section_words) <= max_words:
+            chunks.append(f"{section_name.replace('_', ' ').title()}: {section_text}")
+            continue
+
+        for chunk in chunk_text(section_text, chunk_size=max_words, overlap=overlap):
+            chunks.append(f"{section_name.replace('_', ' ').title()}: {chunk}")
+
+    return chunks
+
+
 def create_embeddings(text_chunks: list[str]) -> np.ndarray:
     """
     Convert a list of text chunks into embedding vectors.

@@ -1,125 +1,208 @@
-﻿# Research Paper Analyzer - Project Handoff Document
+# Research Paper Analyzer
 
-**Project Name:** Research Paper Analyzer (RPA)  
-**Created:** Semester 6, NLP Course  
-**Last Updated:** April 23, 2026
+Research Paper Analyzer is a full-stack NLP application for uploading research papers in PDF format, extracting structured information, generating summaries, surfacing keywords, and enabling question-answering over the uploaded paper.
 
----
+The project uses a FastAPI backend for document processing and a React + Vite frontend for the user interface.
 
-## 1. Project Overview
+## Features
 
-The Research Paper Analyzer is an end-to-end NLP system designed to process PDF research papers and extract structured insights. It combines multiple NLP techniques to:
+- Upload research papers as PDF files
+- Extract metadata such as title, authors, year, journal, and DOI
+- Parse and organize paper text into sections
+- Generate a brief summary plus section-wise summaries
+- Extract keywords and concepts
+- Ask questions about the uploaded paper through a retrieval-based chat flow
 
-- **Extract Metadata** - Title, authors, year, journal, DOI
-- **Parse Text** - Extract full text and organize by sections
-- **Summarize** - Generate section-level and full-paper summaries
-- **Extract Keywords** - Identify key terms and concepts
-- **Enable Chat** - Allow users to ask questions about papers using RAG (Retrieval-Augmented Generation)
-
-The system features a **FastAPI backend** for NLP processing and a **React frontend** with TypeScript for user interaction.
-
----
-
-## 2. Technology Stack
+## Tech Stack
 
 ### Backend
-- **Framework:** FastAPI (Python)
-- **Server:** Uvicorn
-- **Vector DB:** ChromaDB (for semantic search)
-- **Embeddings:** Sentence-Transformers
-- **PDF Processing:** PyMuPDF (pymupdf), pdfplumber
-- **NLP Models:**
-  - Hugging Face Transformers
-  - BART (for summarization)
-  - KeyBERT (for keyword extraction)
-- **LLM Integration:** Ollama (local) or OpenAI API (fallback)
+
+- Python
+- FastAPI
+- Uvicorn
+- PyMuPDF and pdfplumber
+- Transformers and KeyBERT
+- Sentence Transformers or hashing-based fallback embeddings
+- In-memory vector retrieval
 
 ### Frontend
-- **Framework:** React 18.3.1
-- **Language:** TypeScript
-- **Routing:** React Router v6
-- **Styling:** Tailwind CSS + PostCSS
-- **Build Tool:** Vite
-- **UI Components:** Lucide React icons
-- **Charts:** Recharts
-- **State Management:** Zustand
 
-### Development
-- **Python Version:** 3.10+
-- **Node Version:** 16+
-- **Package Managers:** pip, npm/yarn
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Zustand
+- React Router
 
----
-
-## 3. Project Structure
+## Project Structure
 
 ```text
 research paper analyser/
-├── README.md
 ├── backend/
 │   └── bkend/
+│       ├── main.py
+│       ├── requirements.txt
+│       ├── services/
+│       ├── tests/
+│       └── data/
 ├── frontend/
-│   └── frontend/
-│       └── rpa-ui/
+│   └── rpa-ui/
+│       ├── package.json
+│       ├── vite.config.ts
+│       └── src/
+└── README.md
 ```
 
----
+## Active App Paths
 
-## 4. Setup & Installation
+Use these folders when running the project:
 
-### Backend
+- Backend: `backend/bkend`
+- Frontend: `frontend/rpa-ui`
 
-```bash
-cd backend/bkend
-python -m venv .venv
+There is another nested frontend copy in the repository, but the active app currently uses `frontend/rpa-ui`.
+
+## Backend Setup
+
+Open a terminal in the backend folder:
+
+```powershell
+cd "c:\Users\ravi\Desktop\Khushi AI ML\sem 6\nlp\research paper analyser\backend\bkend"
+```
+
+If you need to install dependencies:
+
+```powershell
 pip install -r requirements.txt
 ```
 
-### Frontend
+If you already have the local virtual environment, activate it with:
 
-```bash
-cd frontend/frontend/rpa-ui
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+## Frontend Setup
+
+Open a second terminal in the frontend folder:
+
+```powershell
+cd "c:\Users\ravi\Desktop\Khushi AI ML\sem 6\nlp\research paper analyser\frontend\rpa-ui"
+```
+
+Install frontend dependencies if needed:
+
+```powershell
 npm install
 ```
 
----
+## Running the Application
 
-## 5. Running the Application
+Start the backend:
 
-### Start Backend
-
-```bash
-cd backend/bkend
+```powershell
+cd "c:\Users\ravi\Desktop\Khushi AI ML\sem 6\nlp\research paper analyser\backend\bkend"
+.\venv\Scripts\Activate.ps1
 python main.py
 ```
 
-Backend runs at `http://localhost:8000`.
+Start the frontend:
 
-### Start Frontend
-
-```bash
-cd frontend/frontend/rpa-ui
+```powershell
+cd "c:\Users\ravi\Desktop\Khushi AI ML\sem 6\nlp\research paper analyser\frontend\rpa-ui"
 npm run dev
 ```
 
-Frontend runs at `http://localhost:5173`.
+Open the app at:
 
----
+```text
+http://127.0.0.1:5173
+```
 
-## 6. Main API Endpoints
+The backend runs at:
 
-- `POST /upload` - Upload and process a PDF
-- `POST /chat` - Ask questions about the current paper
-- `GET /paper` - Fetch the current processed paper
-- `POST /summarize` - Fetch generated summaries
-- `GET /keywords` - Fetch keywords and concepts
-- `GET /metadata` - Fetch metadata
-- `GET /health` - Health check
+```text
+http://127.0.0.1:8000
+```
 
----
+## How It Works
 
-## 7. Notes
+1. Upload a PDF through the frontend.
+2. The backend saves the file and processes the paper.
+3. Metadata, summaries, keywords, concepts, and extracted text are generated.
+4. The paper text is chunked and embedded for retrieval.
+5. The frontend displays summary and keyword results.
+6. The chat panel uses retrieved chunks to answer questions about the uploaded paper.
 
-- The frontend now expects Vite to proxy `/api` requests to the FastAPI backend.
-- The backend allows local frontend access from `http://localhost:5173` via CORS.
-- Uploaded papers and processed JSON outputs live under `backend/bkend/data/`.
+## API Endpoints
+
+- `POST /upload`  
+  Upload and process a PDF file.
+
+- `POST /chat`  
+  Ask a question about the currently uploaded paper.
+
+- `GET /paper`  
+  Return the current processed paper payload.
+
+- `POST /summarize`  
+  Return generated summaries for the current paper.
+
+- `GET /keywords`  
+  Return extracted keywords and concepts.
+
+- `GET /metadata`  
+  Return extracted metadata.
+
+- `GET /health`  
+  Health check endpoint.
+
+## Data Storage
+
+Uploaded and processed files are stored here:
+
+- Raw PDFs: `backend/bkend/data/raw_papers`
+- Processed JSON: `backend/bkend/data/processed_text`
+
+## Chat Notes
+
+The chat flow retrieves relevant chunks from the uploaded paper and then tries to generate a final answer.
+
+- If a local Ollama server is available at `http://localhost:11434`, chat can use it for response generation.
+- If Ollama is not running, the backend falls back to returning the most relevant retrieved text instead of failing.
+
+## Development Notes
+
+- The frontend uses a Vite proxy so requests to `/api` are forwarded to the FastAPI backend.
+- The backend currently keeps the active paper and vector store in memory for the running session.
+- Restarting the backend clears the active in-memory chat index.
+
+## Testing
+
+Backend tests are located in:
+
+```text
+backend/bkend/tests
+```
+
+If you want to run them:
+
+```powershell
+cd "c:\Users\ravi\Desktop\Khushi AI ML\sem 6\nlp\research paper analyser\backend\bkend"
+pytest
+```
+
+## Known Limitations
+
+- Only PDF uploads are supported.
+- Chat is scoped to the currently active uploaded paper.
+- The current vector retrieval is in-memory and resets when the backend restarts.
+- If no local LLM is available, chat falls back to retrieved context instead of a fully generated answer.
+
+## Future Improvements
+
+- Add persistent vector storage
+- Support multiple saved papers in the UI
+- Add paper deletion endpoint
+- Improve generated chat responses with a configured LLM provider
+- Add stronger frontend and backend validation

@@ -79,7 +79,7 @@ export function PaperDetailPage() {
 
             {activeTab === 'chat' && <ChatPanel paperId={paperId} />}
 
-            {activeTab === 'preview' && <PdfPreview />}
+            {activeTab === 'preview' && <PdfPreview paper={paper || undefined} />}
           </div>
         </div>
       </div>

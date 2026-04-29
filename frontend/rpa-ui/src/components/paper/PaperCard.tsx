@@ -6,8 +6,9 @@ import { Badge } from '../ui/Badge';
 interface PaperCardProps {
   paper: Paper;
   onDelete?: (id: string) => void;
+  clickable?: boolean;
 }
-export function PaperCard({ paper, onDelete }: PaperCardProps) {
+export function PaperCard({ paper, onDelete, clickable = true }: PaperCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Embedded':
@@ -34,14 +35,19 @@ export function PaperCard({ paper, onDelete }: PaperCardProps) {
       </div>
 
       <div className="flex-1 mb-4">
+        {clickable ?
         <Link
           to={`/papers/${paper.id}`}
           className="block group-hover:text-blue-600 transition-colors">
           
-          <h3 className="text-lg font-bold text-slate-900 line-clamp-2 mb-2 leading-tight">
+            <h3 className="text-lg font-bold text-slate-900 line-clamp-2 mb-2 leading-tight">
+              {paper.title}
+            </h3>
+          </Link> :
+        <h3 className="text-lg font-bold text-slate-900 line-clamp-2 mb-2 leading-tight">
             {paper.title}
           </h3>
-        </Link>
+        }
 
         <div className="space-y-2 text-sm text-slate-600">
           <div className="flex items-start gap-2">
@@ -72,12 +78,14 @@ export function PaperCard({ paper, onDelete }: PaperCardProps) {
               <Trash2 className="w-4 h-4" />
             </button>
           }
+          {clickable ?
           <Link
             to={`/papers/${paper.id}`}
             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
             
-            <ChevronRight className="w-5 h-5" />
-          </Link>
+              <ChevronRight className="w-5 h-5" />
+            </Link> :
+          null}
         </div>
       </div>
     </div>);

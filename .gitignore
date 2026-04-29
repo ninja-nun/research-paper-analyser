@@ -18,6 +18,8 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+*.log
+*.err
 
 # Datasets and model artifacts
 *.arrow
@@ -32,6 +34,8 @@ dist/
 *.dylib
 *.so
 backend/arxiv/
+backend/bkend/data/raw_papers/*.pdf
+backend/bkend/data/processed_text/*.json
 
 # OS/editor artifacts
 .DS_Store

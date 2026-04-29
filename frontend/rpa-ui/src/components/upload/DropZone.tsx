@@ -6,8 +6,9 @@ interface DropZoneProps {
   onUpload: (file: File) => void;
   isUploading: boolean;
   progress: number;
+  uploadError?: string | null;
 }
-export function DropZone({ onUpload, isUploading, progress }: DropZoneProps) {
+export function DropZone({ onUpload, isUploading, progress, uploadError }: DropZoneProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -163,12 +164,17 @@ export function DropZone({ onUpload, isUploading, progress }: DropZoneProps) {
         </div>
       }
 
-      {error &&
+      {(error || uploadError) &&
       <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 text-sm">
           <AlertCircle className="w-4 h-4" />
-          {error}
+          {error || uploadError}
         </div>
       }
+
+      <div className="mt-4 text-xs text-slate-500">
+        Best results come from text-based academic PDFs with selectable text and clear headings like
+        `Abstract`, `Introduction`, `Methodology`, and `Conclusion`.
+      </div>
     </div>);
 
 }

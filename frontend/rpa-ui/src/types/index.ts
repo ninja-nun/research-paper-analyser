@@ -14,6 +14,7 @@ export interface Paper {
   doi?: string;
   journal?: string;
   affiliations?: string[];
+  originalFilename?: string;
   uploadDate: string;
 }
 

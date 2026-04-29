@@ -1,55 +1,44 @@
-import chromadb
 import numpy as np
 
 from services.embedding_store import create_embeddings
 
 
-client = chromadb.Client()
-collection = client.get_or_create_collection(name="documents")
+_stored_chunks: list[str] = []
+_stored_embeddings: np.ndarray | None = None
 
 
 def store_embeddings(chunks: list[str], embeddings: np.ndarray) -> None:
-    """Store embeddings and text chunks in ChromaDB."""
-    ids = [str(i) for i in range(len(chunks))]
+    """Store embeddings and text chunks in a lightweight in-memory index."""
+    global _stored_chunks, _stored_embeddings
 
-    collection.add(
-        documents=chunks,
-        embeddings=embeddings.tolist(),
-        ids=ids,
-    )
+    if len(chunks) != len(embeddings):
+        raise ValueError("chunks and embeddings must have the same length")
 
+    _stored_chunks = list(chunks)
+    _stored_embeddings = np.array(embeddings, dtype="float32")
     print(f"[VectorDB] Stored {len(chunks)} vectors")
 
 
 def retrieve(query: str, top_k: int = 3) -> list[str]:
-    """Retrieve the most similar chunks for a query."""
-    query_embedding = create_embeddings([query])
-
-    results = collection.query(
-        query_embeddings=query_embedding.tolist(),
-        n_results=top_k,
-    )
-
-    docs = results.get("documents")
-    if (
-        docs is None
-        or len(docs) == 0
-        or len(docs[0]) == 0
-        or all(d is None for d in docs[0])
-    ):
+    """Retrieve the most similar chunks using cosine similarity."""
+    if not _stored_chunks or _stored_embeddings is None or len(_stored_embeddings) == 0:
         raise RuntimeError("Vector DB is empty. Call store_embeddings() first.")
 
-    return docs[0]
+    query_embedding = np.array(create_embeddings([query]), dtype="float32")[0]
+
+    chunk_norms = np.linalg.norm(_stored_embeddings, axis=1)
+    query_norm = np.linalg.norm(query_embedding)
+    denom = np.clip(chunk_norms * query_norm, a_min=1e-8, a_max=None)
+    scores = (_stored_embeddings @ query_embedding) / denom
+
+    top_indices = np.argsort(scores)[::-1][:top_k]
+    return [_stored_chunks[int(index)] for index in top_indices]
 
 
 def clear_db() -> None:
-    """Delete and recreate the active in-memory collection."""
-    global collection
+    """Reset the active in-memory collection."""
+    global _stored_chunks, _stored_embeddings
 
-    try:
-        client.delete_collection("documents")
-    except Exception as exc:
-        print(f"[VectorDB] Collection reset skipped: {exc}")
-
-    collection = client.get_or_create_collection(name="documents")
+    _stored_chunks = []
+    _stored_embeddings = None
     print("[VectorDB] Cleared.")

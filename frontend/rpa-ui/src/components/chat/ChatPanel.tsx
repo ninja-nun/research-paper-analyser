@@ -7,11 +7,14 @@ import { Button } from '../ui/Button';
 interface ChatPanelProps {
   paperId: string;
 }
+
+const EMPTY_CHAT_HISTORY: never[] = [];
+
 export function ChatPanel({ paperId }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatHistory = usePaperStore((state) => state.chatHistory[paperId] || []);
+  const chatHistory = usePaperStore((state) => state.chatHistory[paperId] ?? EMPTY_CHAT_HISTORY);
   const addMessage = usePaperStore((state) => state.addChatMessage);
   // Initial greeting if empty
   useEffect(() => {

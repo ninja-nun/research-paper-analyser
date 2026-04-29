@@ -8,14 +8,25 @@ import re
 YEAR_PATTERN = re.compile(r"\b(19|20)\d{2}\b")
 EMAIL_PATTERN = re.compile(r"\b[\w.+-]+@[\w.-]+\.\w+\b")
 DOI_PATTERN = re.compile(r"\b10\.\d{4,9}/[-._;()/:A-Z0-9]+\b", re.IGNORECASE)
+AUTHOR_NAME_PATTERN = re.compile(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-zA-Z.'-]+){1,3}\b")
+TITLE_CASE_TOKEN_PATTERN = re.compile(r"\b[A-Z][a-zA-Z.'-]+\b")
 JOURNAL_PATTERN = re.compile(
     r"\b(?:journal|proceedings|transactions|conference)\s+(?:of|on|in)?\s*([A-Z][A-Za-z0-9 &-]{3,120})",
     re.IGNORECASE,
 )
 AFFILIATION_WORDS = ("university", "institute", "department", "college", "school", "laboratory", "lab")
+SECTION_MARKERS = ("abstract", "keywords", "introduction")
 FUNDING_PATTERN = re.compile(
     r"\b(?:funded by|supported by|grant from|acknowledg(?:e|ement).*?(?:by|from))\s+([^.;\n]+)",
     re.IGNORECASE,
+)
+AFFILIATION_BLOCK_PATTERN = re.compile(
+    r"\b("
+    r"(?:Department|School|Institute|College|Laboratory|Lab)"
+    r".{0,140}?"
+    r"(?:University|Institute|College|School|Laboratory|Lab|[A-Z][a-z]+,\s*[A-Z][a-z]+)"
+    r")",
+    re.DOTALL,
 )
 
 
@@ -25,13 +36,116 @@ def _clean_line(line: str) -> str:
     return line.strip(" -,\t")
 
 
+def _front_matter(text: str) -> str:
+    """Return the title/author/affiliation region before the paper body starts."""
+    limit = 4000
+    lowered = text.lower()
+    cutoffs = [lowered.find(marker) for marker in ("abstract", "keywords", "introduction") if lowered.find(marker) != -1]
+    cutoff = min(cutoffs) if cutoffs else limit
+    return text[: min(cutoff, limit)]
+
+
+def _clean_inline_block(text: str) -> str:
+    text = EMAIL_PATTERN.sub(" ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip(" -,\t")
+
+
+def _looks_like_person_name(value: str) -> bool:
+    parts = value.split()
+    if not 2 <= len(parts) <= 4:
+        return False
+    if any(part.isupper() and len(part) > 1 for part in parts):
+        return False
+    blocked = {"abstract", "introduction", "keywords", "references", "results", "methodology"}
+    return all(part.lower() not in blocked for part in parts)
+
+
+def _score_author_candidate(candidate: str, email_local_part: str) -> tuple[int, int]:
+    tokens = [token.lower() for token in candidate.split()]
+    matches = sum(1 for token in tokens if token in email_local_part)
+    return matches, len(tokens)
+
+
+def _best_author_candidate(tokens: list[str], email_local_part: str) -> str | None:
+    candidates: list[str] = []
+    if len(tokens) >= 2:
+        candidates.append(" ".join(tokens[-2:]))
+    if len(tokens) >= 3:
+        candidates.append(" ".join(tokens[-3:]))
+
+    ranked = sorted(
+        (candidate for candidate in candidates if _looks_like_person_name(candidate)),
+        key=lambda candidate: _score_author_candidate(candidate, email_local_part),
+        reverse=True,
+    )
+    return ranked[0] if ranked else None
+
+
+def _extract_authors_from_front_matter(front: str) -> list[str]:
+    authors: list[str] = []
+
+    last_email_end = 0
+    for email_match in EMAIL_PATTERN.finditer(front):
+        segment = front[last_email_end : email_match.start()]
+        last_email_end = email_match.end()
+
+        affiliation_match = re.search(r"\b(?:Department|School|Institute|College|University|Laboratory|Lab)\b", segment)
+        if not affiliation_match:
+            continue
+
+        pre_affiliation = segment[: affiliation_match.start()]
+        tokens = TITLE_CASE_TOKEN_PATTERN.findall(pre_affiliation)
+        if len(tokens) < 2:
+            continue
+
+        email_local_part = email_match.group(0).split("@", 1)[0].lower()
+        candidate = _best_author_candidate(tokens, email_local_part)
+        if candidate and candidate not in authors:
+            authors.append(candidate)
+
+    return authors
+
+
+def _extract_title_from_front_matter(front: str, authors: list[str]) -> str | None:
+    cleaned_front = _clean_inline_block(front)
+    if not cleaned_front:
+        return None
+
+    if authors:
+        first_author = authors[0]
+        author_index = cleaned_front.find(first_author)
+        if author_index > 8:
+            title_candidate = _clean_inline_block(cleaned_front[:author_index])
+            if len(title_candidate) >= 8:
+                return title_candidate
+
+    return None
+
+
+def _extract_affiliations_from_front_matter(front: str) -> list[str]:
+    affiliations: list[str] = []
+    for match in AFFILIATION_BLOCK_PATTERN.finditer(front):
+        affiliation = _clean_inline_block(match.group(1))
+        word_count = len(affiliation.split())
+        if 3 <= word_count <= 18 and affiliation not in affiliations:
+            affiliations.append(affiliation)
+    return affiliations
+
+
 def extract_title(text: str) -> str:
     """Use the first substantial non-heading line as a title candidate."""
+    front = _front_matter(text)
+    front_authors = _extract_authors_from_front_matter(front)
+    front_title = _extract_title_from_front_matter(front, front_authors)
+    if front_title:
+        return front_title
+
     for raw_line in text.splitlines()[:40]:
         line = _clean_line(raw_line)
         if len(line) < 8:
             continue
-        if line.lower() in {"abstract", "introduction", "keywords"}:
+        if line.lower() in SECTION_MARKERS:
             continue
         if YEAR_PATTERN.fullmatch(line):
             continue
@@ -46,6 +160,11 @@ def extract_authors(text: str) -> list[str]:
     PDF text varies a lot, so this keeps the logic conservative and returns an
     empty list when no useful author line is detected.
     """
+    front = _front_matter(text)
+    front_authors = _extract_authors_from_front_matter(front)
+    if front_authors:
+        return front_authors
+
     lines = [_clean_line(line) for line in text.splitlines()[:50]]
     lines = [line for line in lines if line]
 
@@ -57,7 +176,7 @@ def extract_authors(text: str) -> list[str]:
 
     for line in lines[start : start + 6]:
         lower = line.lower()
-        if lower in {"abstract", "keywords", "introduction"}:
+        if lower in SECTION_MARKERS:
             break
         if any(word in lower for word in ("university", "institute", "department", "college", "school")):
             continue
@@ -91,11 +210,18 @@ def extract_journal(text: str) -> str | None:
 
 
 def extract_affiliations(text: str) -> list[str]:
+    front = _front_matter(text)
+    front_affiliations = _extract_affiliations_from_front_matter(front)
+    if front_affiliations:
+        return front_affiliations
+
     affiliations: list[str] = []
     for raw_line in text.splitlines()[:80]:
         line = _clean_line(raw_line)
         lower = line.lower()
         if any(word in lower for word in AFFILIATION_WORDS):
+            if len(line.split()) > 18:
+                continue
             if line and line not in affiliations:
                 affiliations.append(line)
     return affiliations

@@ -1,0 +1,40 @@
+import { Paper } from '../types';
+
+export const DEMO_PAPERS: Paper[] = [
+  {
+    id: 'demo-transformer',
+    title: 'Attention Is All You Need',
+    authors: ['Ashish Vaswani', 'Noam Shazeer', 'Niki Parmar', 'Jakob Uszkoreit'],
+    year: 2017,
+    status: 'Embedded',
+    doi: '10.48550/arXiv.1706.03762',
+    journal: 'NeurIPS',
+    affiliations: ['Google Brain', 'Google Research'],
+    originalFilename: 'attention-is-all-you-need.pdf',
+    uploadDate: '2023-10-01T12:00:00Z',
+  },
+  {
+    id: 'demo-bert',
+    title: 'BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding',
+    authors: ['Jacob Devlin', 'Ming-Wei Chang', 'Kenton Lee', 'Kristina Toutanova'],
+    year: 2018,
+    status: 'Summarized',
+    doi: '10.48550/arXiv.1810.04805',
+    journal: 'NAACL',
+    affiliations: ['Google AI Language'],
+    originalFilename: 'bert-pretraining.pdf',
+    uploadDate: '2023-10-05T09:30:00Z',
+  },
+  {
+    id: 'demo-gpt3',
+    title: 'Language Models are Few-Shot Learners',
+    authors: ['Tom B. Brown', 'Benjamin Mann', 'Nick Ryder', 'Melanie Subbiah'],
+    year: 2020,
+    status: 'Parsed',
+    doi: '10.48550/arXiv.2005.14165',
+    journal: 'NeurIPS',
+    affiliations: ['OpenAI'],
+    originalFilename: 'few-shot-learners.pdf',
+    uploadDate: '2023-10-10T14:15:00Z',
+  },
+];

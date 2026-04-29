@@ -74,10 +74,12 @@ export function useKeywords(id: string | undefined) {
 export function useUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const mutateAsync = async (file: File) => {
     setIsUploading(true);
     setProgress(10);
+    setError(null);
 
     // Simulate progress
     const interval = setInterval(() => {
@@ -88,6 +90,9 @@ export function useUpload() {
       const res = await api.uploadPaper(file);
       setProgress(100);
       return res;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+      throw err;
     } finally {
       clearInterval(interval);
       setTimeout(() => {
@@ -97,5 +102,5 @@ export function useUpload() {
     }
   };
 
-  return { mutateAsync, isUploading, progress };
+  return { mutateAsync, isUploading, progress, error };
 }
