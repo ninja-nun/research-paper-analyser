@@ -202,7 +202,7 @@ ls -la
 # Should NOT see bkend/ in the listing
 ```
 
-#### Step 7: Update Virtual Environment Path (if needed)
+#### Step 7: Update Virtual Environment Path (if needed) do this at home
 If you have a Python virtual environment, you may need to recreate it:
 
 ```bash
