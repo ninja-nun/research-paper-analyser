@@ -9,3 +9,4 @@ __pycache__/
 *.so
 .env
 .DS_Store
+frontend/node_modules/
